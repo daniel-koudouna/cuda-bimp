@@ -39,9 +39,9 @@
 namespace bimp
 {
 
-	namespace cuda {
+    namespace cuda {
 
-		// These are pointers to CUDA structures which change with each scale, and must be kept on the GPU between frames
+	// These are pointers to CUDA structures which change with each scale, and must be kept on the GPU between frames
 		typedef struct _cudakernels {
 			float lambda, lambda2, pyrstep;
 
@@ -56,6 +56,8 @@ namespace bimp
 
 			//Results stored on the GPU
 			float *d_ResultDouble, *d_ResultSingle, *d_ResultLines, *d_ResultOri;
+		    float *d_ResultComplex[NUM_ORI];
+		    
 
 			// Odd and even simple cell kernels
 			float *h_Kernel_e, *d_Kernel_e, *d_PaddedKernel_e;

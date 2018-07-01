@@ -4,7 +4,7 @@
 
 namespace bimp {
     Context::Context(cv::Mat &image) :
-            cuda_data(image.cols, image.rows, bimp::cuda::makeLambdasLog(8,64,2))
+            cuda_data(image.cols, image.rows, bimp::cuda::makeLambdasLog(4,64,2))
     {
       (*this).current_image = bimp::cuda::getGPUImage(image);
       (*this).current_image_color = bimp::cuda::getGPUImage(image, false);
@@ -15,6 +15,7 @@ namespace bimp {
       (*this).has_changed_descriptors = true;
       (*this).cpu_mode = false;
       (*this).resize_cpu = false;
+      (*this).usingBIMP = true;
     }
 
   int Context::width()
@@ -82,6 +83,18 @@ namespace bimp {
       cv::cuda::GpuMat kpts = getKeypoints();
       return bimp::utils::downloadKeypoints(kpts);
     }
+
+    std::vector<bimp::cuda::CudaKernels*> Context::getResponses() {
+	std::vector<bimp::cuda::CudaKernels*> result;
+
+	std::vector<bimp::cuda::CudaKernels> kers = cuda_data.ks;
+
+	for (int i = 0 ; i < kers.size(); ++i) {
+	    result.push_back(&(kers[i]));
+	}
+
+	return result;
+    };
 
   void Context::loadImage(cv::Mat new_image)
   {

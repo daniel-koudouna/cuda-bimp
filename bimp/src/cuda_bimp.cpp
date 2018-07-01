@@ -239,7 +239,9 @@ namespace bimp
                                                k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex)));
                     checkCudaErrors(cudaMalloc((void **) &k.d_KernelSpectrum_o[o],
                                                k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex)));
-                }
+
+		    checkCudaErrors(cudaMalloc((void **) &k.d_ResultComplex[o], k.fftH * k.fftW * sizeof(float)));
+		}
 
                 checkCudaErrors(static_cast<cudaError>(cufftPlan2d(&k.fftPlanFwd, k.fftH, k.fftW, CUFFT_R2C)));
                 checkCudaErrors(static_cast<cudaError>(cufftPlan2d(&k.fftPlanInv, k.fftH, k.fftW, CUFFT_C2R)));
@@ -397,6 +399,7 @@ namespace bimp
                 for (int o = 0; o < NUM_ORI; o++) {
                     checkCudaErrors(cudaFree(k.d_KernelSpectrum_e[o]));
                     checkCudaErrors(cudaFree(k.d_KernelSpectrum_o[o]));
+                    checkCudaErrors(cudaFree(k.d_ResultComplex[o]));
                 }
 
                 free(k.h_Kernel_e);
@@ -463,7 +466,11 @@ namespace bimp
 
                     // Calculate the complex responses
                     complexResponse(cs.im.d_simple_e[o], cs.im.d_simple_o[o], cs.im.d_complex[o], k.fftW, k.fftH);
+
                     sumArray(cs.im.d_ch, cs.im.d_complex[o], k.dataW, k.dataH, k.fftW);
+
+		    checkCudaErrors(cudaMemcpy(k.d_ResultComplex[o], cs.im.d_complex[o], k.fftH * k.fftW * sizeof(float),
+					       cudaMemcpyDeviceToHost));
                 }
 
                 // Second round of filtering -- get single and double cell responses, as well as tangential and radial inhibition
