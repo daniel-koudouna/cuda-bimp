@@ -57,6 +57,7 @@ namespace bimp
 			//Results stored on the GPU
 			float *d_ResultDouble, *d_ResultSingle, *d_ResultLines, *d_ResultOri;
 		    float *d_ResultComplex[NUM_ORI];
+		    int numOri;
 		    
 
 			// Odd and even simple cell kernels

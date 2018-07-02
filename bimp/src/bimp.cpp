@@ -84,13 +84,13 @@ namespace bimp {
       return bimp::utils::downloadKeypoints(kpts);
     }
 
-    std::vector<bimp::cuda::CudaKernels*> Context::getResponses() {
-	std::vector<bimp::cuda::CudaKernels*> result;
+    std::vector<bimp::cuda::CudaKernels> Context::getResponses() {
+	std::vector<bimp::cuda::CudaKernels> result;
 
 	std::vector<bimp::cuda::CudaKernels> kers = cuda_data.ks;
 
 	for (int i = 0 ; i < kers.size(); ++i) {
-	    result.push_back(&(kers[i]));
+	    result.push_back(kers[i]);
 	}
 
 	return result;

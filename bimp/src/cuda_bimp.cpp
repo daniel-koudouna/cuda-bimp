@@ -182,10 +182,13 @@ namespace bimp
                 CudaKernels k;
 
                 k.pyrstep = 1;
+		k.numOri = NUM_ORI;
 
                 k.lambda2 = lambdas[i];
 
-                while (k.lambda2 / k.pyrstep >= 7.5) k.pyrstep *= 2;
+                while (k.lambda2 / k.pyrstep >= 7.5) {
+		    k.pyrstep *= 2;
+		}
                 k.lambda = k.lambda2 / k.pyrstep;
 
                 float gamma = 0.5;

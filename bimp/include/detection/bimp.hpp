@@ -34,7 +34,7 @@ namespace bimp {
         std::vector<cv::KeyPoint> getKeypointsAndDownload();
         cv::Mat getDescriptorsAndDownload();
 
-	std::vector<bimp::cuda::CudaKernels*> getResponses();
+	std::vector<bimp::cuda::CudaKernels> getResponses();
 
         void loadImage(cv::Mat new_image);
         void loadImage(cv::cuda::GpuMat new_image);
