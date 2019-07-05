@@ -4,13 +4,6 @@
 #include <cufft.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#if CUDA_VERSION >= 5000
-#include <helper_cuda.h>
-#else
-#include <cutil_inline.h>
-#define getLastCudaError cutilCheckMsg
-#define checkCudaErrors cutilSafeCall
-#endif /*CUDA_VERSION >= 5000*/
 #include <vector>
 #include <string>
 #include "opencv2/opencv.hpp"
@@ -58,7 +51,7 @@ namespace bimp
 			float *d_ResultDouble, *d_ResultSingle, *d_ResultLines, *d_ResultOri;
 		    float *d_ResultComplex[NUM_ORI];
 		    int numOri;
-		    
+
 
 			// Odd and even simple cell kernels
 			float *h_Kernel_e, *d_Kernel_e, *d_PaddedKernel_e;
@@ -112,9 +105,9 @@ namespace bimp
          * The output matrix can also be specified.
          */
 	    cv::cuda::GpuMat getKeypoints(cv::Mat &input, CudaStuff &cs);
-	    
+
 	    cv::cuda::GpuMat getKeypoints(cv::cuda::GpuMat &input, CudaStuff &cs, bool cpu_mode = false, bool resize_cpu = false);
-	    
+
 	    int getKeypoints(cv::cuda::GpuMat &input, cv::cuda::GpuMat &output, CudaStuff &cs, bool cpu_mode = false, bool resize_cpu = false);
 
 		/**
@@ -240,4 +233,3 @@ namespace bimp
 } // namespace bimp
 
 #endif // CUDA_BIMP_H
-

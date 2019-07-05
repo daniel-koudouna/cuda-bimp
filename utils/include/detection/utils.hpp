@@ -1,16 +1,13 @@
 #ifndef BIMPUTILS_H
 #define BIMPUTILS_H
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 #include <string>
 #include <iostream>
 #include "opencv2/opencv.hpp"
 #include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <helper_cuda.h>
-#include <helper_cuda_drvapi.h>
-#include <cuda.h>
+#include <vector>
 
 namespace bimp {
     namespace utils {

@@ -1,6 +1,7 @@
 #include "convolutionFFT2D_common.h"
 #include "cuda_bimp.hpp"
 #include "cuda.h"
+#include <opencv2/xfeatures2d/cuda.hpp>
 #define COLOR_FACTOR 0.5
 
 __global__ void addColorFeatures_kernel(
@@ -96,7 +97,7 @@ __global__ void identifyKeypoints_kernel(
     float *p, *firstp, *secondp, *locp;
     const int i = threadIdx.x + blockIdx.x * blockDim.x;
     const int j = threadIdx.y + blockIdx.y * blockDim.y;
-       
+
     if (i > off && i < keypts.cols - off && j > off && j < keypts.rows - off) {
 	p = keypts.ptr(j);
 	firstp = keypts.ptr(j-1);
@@ -112,14 +113,14 @@ __global__ void identifyKeypoints_kernel(
 	    float xv1 = p[i-1];
 	    float xv2 = p[i];
 	    float xv3 = p[i+1];
-	    
+
 	    float yv1 = firstp[i];
 	    float yv2 = p[i];
 	    float yv3 = secondp[i];
-	    
+
 	    float denom_x = xv1 + xv3 - 2*xv2;
-	    float denom_y = yv1 + yv3 - 2*yv2; 
-	    
+	    float denom_y = yv1 + yv3 - 2*yv2;
+
 	    float num_x = 0.5*(xv1 - xv3);
 	    float num_y = 0.5*(yv1 - yv3);
 
@@ -140,7 +141,7 @@ __global__ void identifyKeypoints_kernel(
 		result.ptr(cv::cuda::SURF_CUDA::HESSIAN_ROW)[index] = p[i];
 	    }
 	} else {
-	    locp[i] = 0; 
+	    locp[i] = 0;
 	}
     }
 }
@@ -282,7 +283,7 @@ __global__ void inhibitSpatial_kernel(
     float a = d_arg1[i]; // > 0 ? d_arg1[i] : 0;
     float b = d_arg2[i]; // > 0 ? d_arg2[i] : 0;
     float c = d_arg3[i] > 0 ? d_arg3[i] : 0;
-    float d = 2*b - 16*d_arg4[i]; 
+    float d = 2*b - 16*d_arg4[i];
     d = d > 0 ? d : 0;
 
     float t = a - c - d;
@@ -321,8 +322,8 @@ __global__ void inhibitSpatialAll_kernel(
 
     float g = gauss[i];
 
-    float c = tanin[i]; 
-    float d = 2*g - 16*radin[i]; 
+    float c = tanin[i];
+    float d = 2*g - 16*radin[i];
 
     c = c > 0 ? c : 0;
     d = d > 0 ? d : 0;
@@ -348,23 +349,23 @@ __global__ void eulerStep_kernel(
         return;
 
     float h = 0;
-    float signu = +1; 
+    float signu = +1;
     if(field[i]==0) signu = 0;
     if(field[i]<0) signu = -1;
 
-    float du = -field[i] + h + input[i] + c*lateral[i] - signu*inhib; 
-    
+    float du = -field[i] + h + input[i] + c*lateral[i] - signu*inhib;
+
     field[i] = field[i] + du*time;
 }
 
 __global__ void detectLE_kernel(
          float *d_Result,  float *d_Ori,  char *d_Type,
-         float *d_Ch, 
-         float *d_c0,  float *d_c1,  float *d_c2,  float *d_c3, 
+         float *d_Ch,
+         float *d_c0,  float *d_c1,  float *d_c2,  float *d_c3,
          float *d_c4,  float *d_c5,  float *d_c6,  float *d_c7,
-         float *d_o0,  float *d_o1,  float *d_o2,  float *d_o3, 
+         float *d_o0,  float *d_o1,  float *d_o2,  float *d_o3,
          float *d_o4,  float *d_o5,  float *d_o6,  float *d_o7,
-         float *d_e0,  float *d_e1,  float *d_e2,  float *d_e3, 
+         float *d_e0,  float *d_e1,  float *d_e2,  float *d_e3,
          float *d_e4,  float *d_e5,  float *d_e6,  float *d_e7,
         int dataW, int dataH, int stride )
 {
@@ -393,20 +394,20 @@ __global__ void detectLE_kernel(
         curresp = d_c5[gLoc]; if( curresp > maxresp) { maxresp = curresp; maxori=5; c_max = d_c5; o_max = d_o5; e_max = d_e5; }
         curresp = d_c6[gLoc]; if( curresp > maxresp) { maxresp = curresp; maxori=6; c_max = d_c6; o_max = d_o6; e_max = d_e6; }
         curresp = d_c7[gLoc]; if( curresp > maxresp) { maxresp = curresp; maxori=7; c_max = d_c7; o_max = d_o7; e_max = d_e7; }
-                
+
         float theta = maxori * 0.392699;
         int offsetx = round(cos(theta));
         int offsety = round(sin(theta));
-        
+
         // Find simple cell maxima and minima and zero crossings in the dominant orientation
         bool romax = ( o_max[gLoc]>o_max[gLoc+offsety*stride+offsetx] && o_max[gLoc]>o_max[gLoc-offsety*stride-offsetx] );
         bool romin = ( o_max[gLoc]<o_max[gLoc+offsety*stride+offsetx] && o_max[gLoc]<o_max[gLoc-offsety*stride-offsetx] );
         bool rozc  = ( o_max[gLoc+offsety*stride+offsetx] * o_max[gLoc-offsety*stride-offsetx] < 0 );
-        
+
         bool remax = ( e_max[gLoc]>e_max[gLoc+offsety*stride+offsetx] && e_max[gLoc]>e_max[gLoc-offsety*stride-offsetx] );
         bool remin = ( e_max[gLoc]<e_max[gLoc+offsety*stride+offsetx] && e_max[gLoc]<e_max[gLoc-offsety*stride-offsetx] );
         bool rezc  = ( e_max[gLoc+offsety*stride+offsetx] * e_max[gLoc-offsety*stride-offsetx] < 0 );
-        
+
         // Second and third inhibition step, remove spurius stuff
         if( ( romax || romin || remax || remin ) != true ) value=0;
         else if( ( rezc  || rozc ) != true ) value=0;
@@ -431,7 +432,7 @@ __global__ void detectLE_kernel(
 
 
 
-__global__ void endStoppedResponse_kernel( float *d_double, float *d_single, float *d_complex, 
+__global__ void endStoppedResponse_kernel( float *d_double, float *d_single, float *d_complex,
                                          int offset1, int offset2 ,int dataW, int dataH, int stride)
 {
     int threadX = blockDim.x * blockIdx.x + threadIdx.x;
@@ -464,8 +465,8 @@ __global__ void endStoppedResponse_kernel( float *d_double, float *d_single, flo
 	    atomicAdd(&d_double[sLoc], val);
 }
 
-__global__ void inhibitionResponse_kernel( float *d_tan_in, float *d_rad_in, 
-                                         float *d_complex, float *d_complex2, 
+__global__ void inhibitionResponse_kernel( float *d_tan_in, float *d_rad_in,
+                                         float *d_complex, float *d_complex2,
                                          int offset1, int offset2, int dataW, int dataH, int stride )
 {
     int threadX = blockDim.x * blockIdx.x + threadIdx.x;
@@ -488,7 +489,7 @@ __global__ void inhibitionResponse_kernel( float *d_tan_in, float *d_rad_in,
     val = d_complex[gLoc-offset1*stride-offset2] - centre;
     val = val<0 ? 0 : val;
     atomicAdd(&d_tan_in[sLoc],val);
-    
+
     // radial inhibition
     offset1 = round(0.5*offset1);
     offset2 = round(0.5*offset2);
@@ -499,8 +500,8 @@ __global__ void inhibitionResponse_kernel( float *d_tan_in, float *d_rad_in,
     atomicAdd(&d_rad_in[sLoc],val);
 }
 
-__global__ void inhibitKeypoints_kernel( float *d_double, float *d_single, 
-                                       float *d_tan_in, float *d_rad_in, 
+__global__ void inhibitKeypoints_kernel( float *d_double, float *d_single,
+                                       float *d_tan_in, float *d_rad_in,
                                        int dataW, int dataH, int stride)
 {
     int threadX = blockDim.x * blockIdx.x + threadIdx.x;
@@ -515,24 +516,24 @@ __global__ void inhibitKeypoints_kernel( float *d_double, float *d_single,
 }
 
 
-__global__ void inhibitionResponseLE_kernel( 
-    float *d_lat_in, float *d_cro_in, float *d_complex, float *d_complex2, int offset1, int offset2, 
+__global__ void inhibitionResponseLE_kernel(
+    float *d_lat_in, float *d_cro_in, float *d_complex, float *d_complex2, int offset1, int offset2,
     int dataW, int dataH, int stride )
 {
     // global mem address for this thread
     const int gLoc = threadIdx.x + blockIdx.x * blockDim.x + threadIdx.y * stride + blockIdx.y * blockDim.y * stride;
 
     float val1 = 0, val2 = 0;
-    float result; 
+    float result;
 
     // lateral inhibition
     val1 = d_complex[gLoc+offset1*stride+offset2];
     val2 = d_complex[gLoc-offset1*stride-offset2];
     result = val1 - val2;
     if(result <0) result = -result;
-    result -= (val1+val2)/2; 
+    result -= (val1+val2)/2;
     if(result <0) result = 0;
-    d_lat_in[gLoc] += result*4; // - (val1+val2)/2; 
+    d_lat_in[gLoc] += result*4; // - (val1+val2)/2;
 
     // cross-orientation inhibition
     offset1 *= 2;
@@ -542,6 +543,3 @@ __global__ void inhibitionResponseLE_kernel(
     val1 =  val1<0 ? 0 : val1;
     d_cro_in[gLoc] = val1;
 }
-
-
-

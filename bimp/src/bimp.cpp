@@ -31,7 +31,7 @@ namespace bimp {
     cv::cuda::GpuMat & Context::getDescriptors()
     {
 
-      checkCudaErrors( cudaDeviceSynchronize() );
+      cudaDeviceSynchronize();
       if (this->has_changed_descriptors)
       {
         this->surf(this->current_image, cv::cuda::GpuMat(),this->getKeypoints(), (*this).surf_descriptors, this->usingBIMP);
@@ -58,7 +58,7 @@ namespace bimp {
     }
 
   cv::cuda::GpuMat& Context::getKeypoints() {
-    checkCudaErrors( cudaDeviceSynchronize() );
+    cudaDeviceSynchronize();
     if (this->has_changed_keypoints) {
       if (this->usingBIMP) {
 	  (*this).current_keypoints = bimp::cuda::getKeypoints(this->current_image, this->cuda_data, this->cpu_mode, this->resize_cpu);
@@ -177,15 +177,15 @@ namespace bimp {
     if (use_own)
     {
       c1.getKeypoints();
-      checkCudaErrors( cudaDeviceSynchronize() );
+      cudaDeviceSynchronize();
       c2.getKeypoints();
-      checkCudaErrors( cudaDeviceSynchronize() );
+      cudaDeviceSynchronize();
     }
     cv::cuda::SURF_CUDA surf( minHessian );
     surf(c1.current_image, cv::cuda::GpuMat(),c1.current_keypoints, c1_desc, use_own);
-    checkCudaErrors( cudaDeviceSynchronize() );
+    cudaDeviceSynchronize();
     surf(c2.current_image, cv::cuda::GpuMat(),c2.current_keypoints, c2_desc, use_own);
-    checkCudaErrors( cudaDeviceSynchronize() );
+    cudaDeviceSynchronize();
     if (!use_own)
     {
       c1.has_changed_keypoints = false;
@@ -237,7 +237,7 @@ namespace bimp {
     {
       cv::Mat res;
       float sf = SURF_MIN_SIZE/((float)mat.rows);
-      cv::resize(mat, res, cv::Size(0,0), sf, sf, CV_INTER_NN);
+      cv::resize(mat, res, cv::Size(0,0), sf, sf, cv::INTER_NEAREST);
 
       //std::cout << "Upscaling by s.f " << sf << std::endl;
       return res;
@@ -246,7 +246,7 @@ namespace bimp {
     {
       cv::Mat res;
       float sf = SURF_MIN_SIZE/((float)mat.cols);
-      cv::resize(mat, res, cv::Size(0,0), sf, sf, CV_INTER_CUBIC);
+      cv::resize(mat, res, cv::Size(0,0), sf, sf, cv::INTER_CUBIC);
 
       //std::cout << "Upscaling by s.f " << sf << std::endl;
       return res;
@@ -263,7 +263,7 @@ namespace bimp {
 	mat.download(temp);
 	showResized(temp,sf, showImage);
     }
-    
+
     void showResized(cv::Mat &mat, float sf, bool showImage)
     {
 	cv::Mat view_mat;
@@ -299,5 +299,3 @@ namespace bimp {
 	}
     }
 }
-
-

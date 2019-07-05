@@ -1,8 +1,7 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include "opencv2/opencv.hpp"
 #include <thrust/device_ptr.h>
 #include <detection/cuda_bimp.hpp>
-#include <helper_cuda.h>
 #include "detection/cuda_bimp.hpp"
 #include "detection/convolutionFFT2D_common.h"
 #include "detection/util.h"
@@ -16,7 +15,7 @@ namespace bimp
         {
             cudaStream_t *res = new cudaStream_t[NUM_ORI];
             for (int i = 0; i < NUM_ORI; i++) {
-                checkCudaErrors(cudaStreamCreate(&res[i]));
+              cudaStreamCreate(&res[i]);
             }
             return res;
         }
@@ -66,7 +65,7 @@ namespace bimp
 
             if (!cpu_mode) {
                 DoFullGPUFiltering(cs, input, output);
-                checkCudaErrors(cudaDeviceSynchronize());
+                cudaDeviceSynchronize();
                 rows = *cs.im.d_k_count;
             } else {
                 setupCUDAImages(cs, input, resize_cpu);
@@ -104,7 +103,8 @@ namespace bimp
 
             std::vector<cv::KeyPoint> points = bimp::utils::downloadKeypoints(res);
 
-            cv::drawKeypoints(input, points, output, col, flags);
+            // TODO ignore flags
+            cv::drawKeypoints(input, points, output, col, cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         }
 
         cv::cuda::GpuMat getGPUImage(cv::Mat &in, bool grayscale) {
@@ -125,7 +125,7 @@ namespace bimp
             if (input.type() > 0 && grayscale) {
                 cv::cuda::GpuMat d_image(input.size(), input.type());
                 d_image.upload(input);
-                cv::cuda::cvtColor(d_image, d_input, CV_BGR2GRAY);
+                cv::cuda::cvtColor(d_image, d_input, cv::COLOR_BGR2GRAY);
             } else {
                 d_input.upload(input);
             }
@@ -212,18 +212,18 @@ namespace bimp
                 //std::cout << "FFT size: " << k.fftW << " x " << k.fftH << std::endl;
 
                 // Data
-                checkCudaErrors(cudaMalloc((void **) &k.d_Data, k.dataH * k.dataW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &k.d_PaddedData, k.fftH * k.fftW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &k.d_DataSpectrum, k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex)));
+                cudaMalloc((void **) &k.d_Data, k.dataH * k.dataW * sizeof(float));
+                cudaMalloc((void **) &k.d_PaddedData, k.fftH * k.fftW * sizeof(float));
+                cudaMalloc((void **) &k.d_DataSpectrum, k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex));
                 // Simple cells
                 k.h_Kernel_e = (float *) malloc(k.kernelH * k.kernelW * sizeof(float));
                 k.h_Kernel_o = (float *) malloc(k.kernelH * k.kernelW * sizeof(float));
 
-                checkCudaErrors(cudaMalloc((void **) &k.d_Kernel_e, k.kernelH * k.kernelW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &k.d_Kernel_o, k.kernelH * k.kernelW * sizeof(float)));
+                cudaMalloc((void **) &k.d_Kernel_e, k.kernelH * k.kernelW * sizeof(float));
+                cudaMalloc((void **) &k.d_Kernel_o, k.kernelH * k.kernelW * sizeof(float));
 
-                checkCudaErrors(cudaMalloc((void **) &k.d_PaddedKernel_e, k.fftH * k.fftW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &k.d_PaddedKernel_o, k.fftH * k.fftW * sizeof(float)));
+                cudaMalloc((void **) &k.d_PaddedKernel_e, k.fftH * k.fftW * sizeof(float));
+                cudaMalloc((void **) &k.d_PaddedKernel_o, k.fftH * k.fftW * sizeof(float));
 
                 k.h_ResultDouble = (float *) malloc(k.dataH * k.dataW * sizeof(float));
                 k.h_ResultSingle = (float *) malloc(k.dataH * k.dataW * sizeof(float));
@@ -231,23 +231,23 @@ namespace bimp
                 k.h_ResultOri = (float *) malloc(k.dataH * k.dataW * sizeof(float));
                 k.h_ResultType = (char *) malloc(k.dataH * k.dataW * sizeof(char));
 
-                checkCudaErrors(cudaMalloc((void **) &k.d_ResultDouble, k.dataH * k.dataW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &k.d_ResultLines, k.dataH * k.dataW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &k.d_ResultOri, k.dataH * k.dataW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &k.d_ResultSingle, k.dataH * k.dataW * sizeof(float)));
+                cudaMalloc((void **) &k.d_ResultDouble, k.dataH * k.dataW * sizeof(float));
+                cudaMalloc((void **) &k.d_ResultLines, k.dataH * k.dataW * sizeof(float));
+                cudaMalloc((void **) &k.d_ResultOri, k.dataH * k.dataW * sizeof(float));
+                cudaMalloc((void **) &k.d_ResultSingle, k.dataH * k.dataW * sizeof(float));
 
                 for (int o = 0; o < NUM_ORI; o++) {
                     // Simple cells
-                    checkCudaErrors(cudaMalloc((void **) &k.d_KernelSpectrum_e[o],
-                                               k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex)));
-                    checkCudaErrors(cudaMalloc((void **) &k.d_KernelSpectrum_o[o],
-                                               k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex)));
+                    cudaMalloc((void **) &k.d_KernelSpectrum_e[o],
+                                               k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex));
+                    cudaMalloc((void **) &k.d_KernelSpectrum_o[o],
+                                               k.fftH * (k.fftW / 2 + 1) * sizeof(fComplex));
 
-		    checkCudaErrors(cudaMalloc((void **) &k.d_ResultComplex[o], k.fftH * k.fftW * sizeof(float)));
+		    cudaMalloc((void **) &k.d_ResultComplex[o], k.fftH * k.fftW * sizeof(float));
 		}
 
-                checkCudaErrors(static_cast<cudaError>(cufftPlan2d(&k.fftPlanFwd, k.fftH, k.fftW, CUFFT_R2C)));
-                checkCudaErrors(static_cast<cudaError>(cufftPlan2d(&k.fftPlanInv, k.fftH, k.fftW, CUFFT_C2R)));
+                cufftPlan2d(&k.fftPlanFwd, k.fftH, k.fftW, CUFFT_R2C);
+                cufftPlan2d(&k.fftPlanInv, k.fftH, k.fftW, CUFFT_C2R);
 
                 // Now create all the wavelets we will be using. Since they won't change, precalculate them here and transfer them
                 // to the GPU
@@ -284,22 +284,22 @@ namespace bimp
                         k.h_Kernel_e[m] -= evensum / (filtersize * filtersize);
 
                     // Transfer the new kernels to the GPU device and pad them to POT
-                    checkCudaErrors(cudaMemcpy(k.d_Kernel_e, k.h_Kernel_e,
-                                               k.kernelH * k.kernelW * sizeof(float), cudaMemcpyHostToDevice));
-                    checkCudaErrors(cudaMemcpy(k.d_Kernel_o, k.h_Kernel_o,
-                                               k.kernelH * k.kernelW * sizeof(float), cudaMemcpyHostToDevice));
-                    checkCudaErrors(cudaMemset(k.d_PaddedKernel_e, 0, k.fftH * k.fftW * sizeof(float)));
-                    checkCudaErrors(cudaMemset(k.d_PaddedKernel_o, 0, k.fftH * k.fftW * sizeof(float)));
+                    cudaMemcpy(k.d_Kernel_e, k.h_Kernel_e,
+                                               k.kernelH * k.kernelW * sizeof(float), cudaMemcpyHostToDevice);
+                    cudaMemcpy(k.d_Kernel_o, k.h_Kernel_o,
+                                               k.kernelH * k.kernelW * sizeof(float), cudaMemcpyHostToDevice);
+                    cudaMemset(k.d_PaddedKernel_e, 0, k.fftH * k.fftW * sizeof(float));
+                    cudaMemset(k.d_PaddedKernel_o, 0, k.fftH * k.fftW * sizeof(float));
                     padKernel(k.d_PaddedKernel_e, k.d_Kernel_e, k.fftH, k.fftW, k.kernelH, k.kernelW, k.kernelY,
                               k.kernelX);
                     padKernel(k.d_PaddedKernel_o, k.d_Kernel_o, k.fftH, k.fftW, k.kernelH, k.kernelW, k.kernelY,
                               k.kernelX);
 
                     // calculate FFT of the kernels on the GPU device
-                    checkCudaErrors(static_cast<cudaError>(cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedKernel_e,
-                                                                        (cufftComplex *) k.d_KernelSpectrum_e[o])));
-                    checkCudaErrors(static_cast<cudaError>(cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedKernel_o,
-                                                                        (cufftComplex *) k.d_KernelSpectrum_o[o])));
+                    cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedKernel_e,
+                                                                        (cufftComplex *) k.d_KernelSpectrum_e[o]);
+                    cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedKernel_o,
+                                                                        (cufftComplex *) k.d_KernelSpectrum_o[o]);
 
                 }
 
@@ -307,102 +307,102 @@ namespace bimp
                 (*this).ks.push_back(k);
             }
 
-            checkCudaErrors(cudaMallocManaged(((void **) &(this->im.d_k_count)), sizeof(int)));
+            cudaMallocManaged(((void **) &(this->im.d_k_count)), sizeof(int));
 
             // Allocate the memory for shared objects (frame information and reusable buffers)
             CudaKernels &k0 = this->ks[0];
-            checkCudaErrors(
-                    cudaMalloc((void **) &(this->im.d_doubleSpectrum), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex)));
-            checkCudaErrors(
-                    cudaMalloc((void **) &(this->im.d_singleSpectrum), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex)));
-            checkCudaErrors(
-                    cudaMalloc((void **) &(this->im.d_inhibSpectrum), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex)));
 
-            checkCudaErrors(
-                    cudaMalloc((void **) &(this->im.d_DataSpectrum_1), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex)));
-            checkCudaErrors(
-                    cudaMalloc((void **) &(this->im.d_DataSpectrum_2), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex)));
+                    cudaMalloc((void **) &(this->im.d_doubleSpectrum), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex));
 
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_double), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_single), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_tan_in), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_rad_in), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_lat_in), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_cro_in), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_gauss), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_ch), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_lines), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_ori), k0.dataH * k0.dataW * sizeof(float)));
-            checkCudaErrors(cudaMalloc((void **) &(this->im.d_type), k0.dataH * k0.dataW * sizeof(char)));
+                    cudaMalloc((void **) &(this->im.d_singleSpectrum), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex));
+
+                    cudaMalloc((void **) &(this->im.d_inhibSpectrum), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex));
+
+
+                    cudaMalloc((void **) &(this->im.d_DataSpectrum_1), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex));
+
+                    cudaMalloc((void **) &(this->im.d_DataSpectrum_2), k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex));
+
+            cudaMalloc((void **) &(this->im.d_double), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_single), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_tan_in), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_rad_in), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_lat_in), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_cro_in), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_gauss), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_ch), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_lines), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_ori), k0.dataH * k0.dataW * sizeof(float));
+            cudaMalloc((void **) &(this->im.d_type), k0.dataH * k0.dataW * sizeof(char));
 
             for (int o = 0; o < NUM_ORI; o++) {
                 // Simple cells
-                checkCudaErrors(cudaMalloc((void **) &(this->im.d_simple_e[o]), k0.fftH * k0.fftW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &(this->im.d_simple_o[o]), k0.fftH * k0.fftW * sizeof(float)));
+                cudaMalloc((void **) &(this->im.d_simple_e[o]), k0.fftH * k0.fftW * sizeof(float));
+                cudaMalloc((void **) &(this->im.d_simple_o[o]), k0.fftH * k0.fftW * sizeof(float));
 
                 // Complex cells
-                checkCudaErrors(cudaMalloc((void **) &(this->im.d_complex[o]), k0.fftH * k0.fftW * sizeof(float)));
-                checkCudaErrors(cudaMalloc((void **) &(this->im.d_complexSpectrum[o]),
-                                           k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex)));
+                cudaMalloc((void **) &(this->im.d_complex[o]), k0.fftH * k0.fftW * sizeof(float));
+                cudaMalloc((void **) &(this->im.d_complexSpectrum[o]),
+                                           k0.fftH * (k0.fftW / 2 + 1) * sizeof(fComplex));
             }
 
         }
 
         CudaStuff::~CudaStuff() {
-            checkCudaErrors(cudaFree(this->im.d_double));
-            checkCudaErrors(cudaFree(this->im.d_single));
-            checkCudaErrors(cudaFree(this->im.d_tan_in));
-            checkCudaErrors(cudaFree(this->im.d_rad_in));
-            checkCudaErrors(cudaFree(this->im.d_lat_in));
-            checkCudaErrors(cudaFree(this->im.d_cro_in));
-            checkCudaErrors(cudaFree(this->im.d_gauss));
-            checkCudaErrors(cudaFree(this->im.d_ch));
-            checkCudaErrors(cudaFree(this->im.d_lines));
-            checkCudaErrors(cudaFree(this->im.d_ori));
-            checkCudaErrors(cudaFree(this->im.d_type));
-            checkCudaErrors(cudaFree(this->im.d_singleSpectrum));
-            checkCudaErrors(cudaFree(this->im.d_doubleSpectrum));
-            checkCudaErrors(cudaFree(this->im.d_inhibSpectrum));
+            cudaFree(this->im.d_double);
+            cudaFree(this->im.d_single);
+            cudaFree(this->im.d_tan_in);
+            cudaFree(this->im.d_rad_in);
+            cudaFree(this->im.d_lat_in);
+            cudaFree(this->im.d_cro_in);
+            cudaFree(this->im.d_gauss);
+            cudaFree(this->im.d_ch);
+            cudaFree(this->im.d_lines);
+            cudaFree(this->im.d_ori);
+            cudaFree(this->im.d_type);
+            cudaFree(this->im.d_singleSpectrum);
+            cudaFree(this->im.d_doubleSpectrum);
+            cudaFree(this->im.d_inhibSpectrum);
 
-            checkCudaErrors(cudaFree(this->im.d_DataSpectrum_1));
-            checkCudaErrors(cudaFree(this->im.d_DataSpectrum_2));
+            cudaFree(this->im.d_DataSpectrum_1);
+            cudaFree(this->im.d_DataSpectrum_2);
 
-            checkCudaErrors(cudaFree(this->im.d_k_count));
+            cudaFree(this->im.d_k_count);
 
             for (int o = 0; o < NUM_ORI; o++) {
-                checkCudaErrors(cudaFree(this->im.d_simple_e[o]));
-                checkCudaErrors(cudaFree(this->im.d_simple_o[o]));
+                cudaFree(this->im.d_simple_e[o]);
+                cudaFree(this->im.d_simple_o[o]);
 
-                checkCudaErrors(cudaFree(this->im.d_complex[o]));
-                checkCudaErrors(cudaFree(this->im.d_complexSpectrum[o]));
+                cudaFree(this->im.d_complex[o]);
+                cudaFree(this->im.d_complexSpectrum[o]);
             }
 
             for (int i = 0; i < this->ks.size(); i++) {
                 CudaKernels &k = this->ks[i];
 
-                checkCudaErrors(cudaFree(k.d_PaddedData));
-                checkCudaErrors(cudaFree(k.d_Data));
-                checkCudaErrors(cudaFree(k.d_DataSpectrum));
+                cudaFree(k.d_PaddedData);
+                cudaFree(k.d_Data);
+                cudaFree(k.d_DataSpectrum);
 
-                checkCudaErrors(cudaFree(k.d_ResultSingle));
-                checkCudaErrors(cudaFree(k.d_ResultDouble));
-                checkCudaErrors(cudaFree(k.d_ResultOri));
-                checkCudaErrors(cudaFree(k.d_ResultLines));
+                cudaFree(k.d_ResultSingle);
+                cudaFree(k.d_ResultDouble);
+                cudaFree(k.d_ResultOri);
+                cudaFree(k.d_ResultLines);
 
                 // Clean up CUDA stuff
-                checkCudaErrors(static_cast<cudaError>(cufftDestroy(k.fftPlanInv)));
-                checkCudaErrors(static_cast<cudaError>(cufftDestroy(k.fftPlanFwd)));
+                cufftDestroy(k.fftPlanInv);
+                cufftDestroy(k.fftPlanFwd);
 
-                checkCudaErrors(cudaFree(k.d_PaddedKernel_e));
-                checkCudaErrors(cudaFree(k.d_Kernel_e));
+                cudaFree(k.d_PaddedKernel_e);
+                cudaFree(k.d_Kernel_e);
 
-                checkCudaErrors(cudaFree(k.d_PaddedKernel_o));
-                checkCudaErrors(cudaFree(k.d_Kernel_o));
+                cudaFree(k.d_PaddedKernel_o);
+                cudaFree(k.d_Kernel_o);
 
                 for (int o = 0; o < NUM_ORI; o++) {
-                    checkCudaErrors(cudaFree(k.d_KernelSpectrum_e[o]));
-                    checkCudaErrors(cudaFree(k.d_KernelSpectrum_o[o]));
-                    checkCudaErrors(cudaFree(k.d_ResultComplex[o]));
+                    cudaFree(k.d_KernelSpectrum_e[o]);
+                    cudaFree(k.d_KernelSpectrum_o[o]);
+                    cudaFree(k.d_ResultComplex[o]);
                 }
 
                 free(k.h_Kernel_e);
@@ -441,15 +441,15 @@ namespace bimp
                 bimp::utils::log("CV to CUDA conversion", 5, &t);
 
                 // transfer image and kernel data to CPU
-                checkCudaErrors(cudaMemset(k.d_PaddedData, 0, k.fftH * k.fftW * sizeof(float)));
+                cudaMemset(k.d_PaddedData, 0, k.fftH * k.fftW * sizeof(float));
 
                 padDataClampToBorder(k.d_PaddedData, k.d_Data, k.fftH, k.fftW, k.dataH, k.dataW, k.kernelH, k.kernelW,
                                      k.kernelY, k.kernelX);
 
                 // obtain the frequency spectrum of the image
 
-                checkCudaErrors(static_cast<cudaError>(cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedData,
-                                                                    (cufftComplex *) k.d_DataSpectrum)));
+                cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedData,
+                                                                    (cufftComplex *) k.d_DataSpectrum);
 
                 clearfloatarray(cs.im.d_ch, k.dataW, k.dataH);
 
@@ -460,20 +460,20 @@ namespace bimp
                                       k.d_DataSpectrum, k.fftW, k.fftH, orientationStreams[o]);
 
                     // Transfer the simple cell responses back to the spatial domain
-                    checkCudaErrors(
-                            static_cast<cudaError>(cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_1,
-                                                                (cufftReal *) cs.im.d_simple_e[o])));
-                    checkCudaErrors(
-                            static_cast<cudaError>(cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_2,
-                                                                (cufftReal *) cs.im.d_simple_o[o])));
+
+                            cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_1,
+                                                                (cufftReal *) cs.im.d_simple_e[o]);
+
+                            cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_2,
+                                                                (cufftReal *) cs.im.d_simple_o[o]);
 
                     // Calculate the complex responses
                     complexResponse(cs.im.d_simple_e[o], cs.im.d_simple_o[o], cs.im.d_complex[o], k.fftW, k.fftH);
 
                     sumArray(cs.im.d_ch, cs.im.d_complex[o], k.dataW, k.dataH, k.fftW);
 
-		    checkCudaErrors(cudaMemcpy(k.d_ResultComplex[o], cs.im.d_complex[o], k.fftH * k.fftW * sizeof(float),
-					       cudaMemcpyDeviceToHost));
+		    cudaMemcpy(k.d_ResultComplex[o], cs.im.d_complex[o], k.fftH * k.fftW * sizeof(float),
+					       cudaMemcpyDeviceToHost);
                 }
 
                 // Second round of filtering -- get single and double cell responses, as well as tangential and radial inhibition
@@ -517,14 +517,14 @@ namespace bimp
 
 
                 // transfer image and kernel data to CPU
-                checkCudaErrors(cudaMemset(k.d_PaddedData, 0, k.fftH * k.fftW * sizeof(float)));
+                cudaMemset(k.d_PaddedData, 0, k.fftH * k.fftW * sizeof(float));
 
                 padDataClampToBorder(k.d_PaddedData, k.d_Data, k.fftH, k.fftW, k.dataH, k.dataW, k.kernelH, k.kernelW,
                                      k.kernelY, k.kernelX);
 
                 // obtain the frequency spectrum of the image
-                checkCudaErrors(static_cast<cudaError>(cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedData,
-                                                                    (cufftComplex *) k.d_DataSpectrum)));
+                cufftExecR2C(k.fftPlanFwd, (cufftReal *) k.d_PaddedData,
+                                                                    (cufftComplex *) k.d_DataSpectrum);
 
                 clearfloatarray(cs.im.d_ch, k.dataW, k.dataH);
 
@@ -535,12 +535,12 @@ namespace bimp
                                       k.d_DataSpectrum, k.fftW, k.fftH);
 
                     // Transfer the simple cell responses back to the spatial domain
-                    checkCudaErrors(
-                            static_cast<cudaError>(cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_1,
-                                                                (cufftReal *) cs.im.d_simple_e[o])));
-                    checkCudaErrors(
-                            static_cast<cudaError>(cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_2,
-                                                                (cufftReal *) cs.im.d_simple_o[o])));
+
+                    cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_1,
+                                                                (cufftReal *) cs.im.d_simple_e[o]);
+
+                    cufftExecC2R(k.fftPlanInv, (cufftComplex *) cs.im.d_DataSpectrum_2,
+                                                                (cufftReal *) cs.im.d_simple_o[o]);
 
                     // Calculate the complex responses
                     complexResponse(cs.im.d_simple_e[o], cs.im.d_simple_o[o], cs.im.d_complex[o], k.fftW, k.fftH);
@@ -574,14 +574,14 @@ namespace bimp
                                  k.dataW);
 
                 std::cout << "copying gpu to cpu memory" << std::endl;
-                checkCudaErrors(cudaMemcpy(k.h_ResultDouble, k.d_ResultDouble, k.dataH * k.dataW * sizeof(float),
-                                           cudaMemcpyDeviceToHost));
-                checkCudaErrors(cudaMemcpy(k.h_ResultSingle, k.d_ResultSingle, k.dataH * k.dataW * sizeof(float),
-                                           cudaMemcpyDeviceToHost));
-                checkCudaErrors(cudaMemcpy(k.h_ResultLines, k.d_ResultLines, k.dataH * k.dataW * sizeof(float),
-                                           cudaMemcpyDeviceToHost));
-                checkCudaErrors(cudaMemcpy(k.h_ResultOri, k.d_ResultOri, k.dataH * k.dataW * sizeof(float),
-                                           cudaMemcpyDeviceToHost));
+                cudaMemcpy(k.h_ResultDouble, k.d_ResultDouble, k.dataH * k.dataW * sizeof(float),
+                                           cudaMemcpyDeviceToHost);
+                cudaMemcpy(k.h_ResultSingle, k.d_ResultSingle, k.dataH * k.dataW * sizeof(float),
+                                           cudaMemcpyDeviceToHost);
+                cudaMemcpy(k.h_ResultLines, k.d_ResultLines, k.dataH * k.dataW * sizeof(float),
+                                           cudaMemcpyDeviceToHost);
+                cudaMemcpy(k.h_ResultOri, k.d_ResultOri, k.dataH * k.dataW * sizeof(float),
+                                           cudaMemcpyDeviceToHost);
 
             }
 
@@ -598,7 +598,7 @@ namespace bimp
                 float pyrstep = cs.ks[i].pyrstep;
 
 		cv::cuda::GpuMat downscaled;
-		
+
 		if (resize_cpu) {
 
 		    cv::Mat cIntensity;
@@ -613,21 +613,21 @@ namespace bimp
 		} else {
 
 		    downscaled = intensity.clone();
-		    
+
 		    while (pyrstep > 1) {
 			cv::cuda::pyrDown(downscaled, downscaled);
 			pyrstep /= 2;
 		    }
-		    
+
 
 		}
-		
+
 		cv::cuda::GpuMat data(k.dataH, k.dataW, CV_32FC1, k.d_Data);
 		downscaled.convertTo(data, CV_32FC1, 255.0 / 65536.0);
                 k.d_DataMat = data;
                 collectCVMemory(k.d_DataMat, k.d_Data, k.dataW, k.dataH);
 
-		
+
             }
         }
 

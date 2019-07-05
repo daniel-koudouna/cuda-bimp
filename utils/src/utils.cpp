@@ -1,6 +1,8 @@
 #include <helper_cuda.h>
 #include <dirent.h>
+#include <numeric>
 #include "detection/utils.hpp"
+#include <opencv2/xfeatures2d/cuda.hpp>
 #include "../../bimp/include/detection/cuda_bimp.hpp"
 
 namespace bimp {
@@ -59,7 +61,7 @@ namespace bimp {
 				}
 				timeMap[msg].push_back(delta);
             }
-		    
+
 			if (depth > log_depth)
 				return;
 
