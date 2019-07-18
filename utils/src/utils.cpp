@@ -1,6 +1,7 @@
 #include <helper_cuda.h>
 #include <dirent.h>
 #include "detection/utils.hpp"
+#include <numeric>
 #include "../../bimp/include/detection/cuda_bimp.hpp"
 
 namespace bimp {
