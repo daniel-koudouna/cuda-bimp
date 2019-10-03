@@ -1,6 +1,8 @@
 #ifndef BIMP_H
 #define BIMP_H
 
+#pragma once
+
 #include "opencv2/opencv.hpp"
 #include "cuda_bimp.hpp"
 #include "opencv2/xfeatures2d.hpp"

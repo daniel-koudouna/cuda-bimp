@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
 project(bimp)
 
+set(CMAKE_CUDA_HOST_COMPILER "/usr/local/cuda/bin/g++")
+
 find_package( OpenCV REQUIRED )
 find_package( CUDA REQUIRED )
 find_package( Boost REQUIRED COMPONENTS system filesystem )
