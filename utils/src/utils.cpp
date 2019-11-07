@@ -3,6 +3,7 @@
 #include "detection/utils.hpp"
 #include <numeric>
 #include "../../bimp/include/detection/cuda_bimp.hpp"
+#include <opencv2/xfeatures2d/cuda.hpp>
 
 namespace bimp {
 	namespace utils {

@@ -1,6 +1,7 @@
 #include <cuda.h>
 #include <detection/bimp.hpp>
 #include <detection/cuda_bimp.hpp>
+#include <opencv2/xfeatures2d/cuda.hpp>
 
 namespace bimp {
     Context::Context(cv::Mat &image) :
@@ -237,7 +238,7 @@ namespace bimp {
     {
       cv::Mat res;
       float sf = SURF_MIN_SIZE/((float)mat.rows);
-      cv::resize(mat, res, cv::Size(0,0), sf, sf, CV_INTER_NN);
+      cv::resize(mat, res, cv::Size(0,0), sf, sf, cv::INTER_NEAREST);
 
       //std::cout << "Upscaling by s.f " << sf << std::endl;
       return res;
@@ -246,7 +247,7 @@ namespace bimp {
     {
       cv::Mat res;
       float sf = SURF_MIN_SIZE/((float)mat.cols);
-      cv::resize(mat, res, cv::Size(0,0), sf, sf, CV_INTER_CUBIC);
+      cv::resize(mat, res, cv::Size(0,0), sf, sf, cv::INTER_CUBIC);
 
       //std::cout << "Upscaling by s.f " << sf << std::endl;
       return res;
@@ -263,7 +264,7 @@ namespace bimp {
 	mat.download(temp);
 	showResized(temp,sf, showImage);
     }
-    
+
     void showResized(cv::Mat &mat, float sf, bool showImage)
     {
 	cv::Mat view_mat;
@@ -299,5 +300,3 @@ namespace bimp {
 	}
     }
 }
-
-

@@ -7,6 +7,7 @@ find_package( OpenCV REQUIRED )
 find_package( Boost REQUIRED COMPONENTS system filesystem )
 
 set (CMAKE_CXX_STANDARD 11)
+
 set(SOURCES
         src/bimp.cpp
         src/convolutionFFT2D.cu
@@ -19,6 +20,8 @@ link_directories(${BOOST_LIBRARY_DIRS})
 
 add_library(${PROJECT_NAME} ${SOURCES})
 add_library(detection::bimp ALIAS ${PROJECT_NAME})
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_STANDARD 11)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${PROJECT_SOURCE_DIR}/include

@@ -141,7 +141,7 @@ namespace bimp {
 
             std::vector<cv::KeyPoint> points = bimp::utils::downloadKeypoints(res);
 
-            cv::drawKeypoints(input, points, output, col, flags);
+            cv::drawKeypoints(input, points, output, col, cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         }
 
         cv::cuda::GpuMat getGPUImage(cv::Mat &in, bool grayscale) {
@@ -162,7 +162,7 @@ namespace bimp {
             if (input.type() > 0 && grayscale) {
                 cv::cuda::GpuMat d_image(input.size(), input.type());
                 d_image.upload(input);
-                cv::cuda::cvtColor(d_image, d_input, CV_BGR2GRAY);
+                cv::cuda::cvtColor(d_image, d_input, cv::COLOR_BGR2GRAY);
             } else {
                 d_input.upload(input);
             }

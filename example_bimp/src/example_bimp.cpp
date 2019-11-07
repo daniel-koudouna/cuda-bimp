@@ -44,7 +44,7 @@ void showSingle(cv::CommandLineParser parser)
     cv::Rect ROI(0,0,img.cols,img.rows);
 
     bool render = !parser.has("silent");
-    
+
     bimp::Context context(img);
 
     context.setCPUMode(cpu_mode);
@@ -53,8 +53,8 @@ void showSingle(cv::CommandLineParser parser)
     cv::cuda::GpuMat keypoints = context.getKeypoints();
     std::vector<cv::KeyPoint> points = bimp::utils::downloadKeypoints(keypoints);
 
-    drawKeypoints(img, points, output, cv::Scalar::all(255), 4);
-    
+    drawKeypoints(img, points, output, cv::Scalar::all(255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
     imwrite("out.png", output(ROI));
 
     if (render)
@@ -78,7 +78,7 @@ void matchImages(cv::CommandLineParser parser)
 
     cv::Mat train = bimp::getMinSized(h_train);
     cv::Mat test = bimp::getMinSized(h_test);
-    
+
     bimp::Context c1(train);
     bimp::Context c2(test);
 
@@ -86,9 +86,9 @@ void matchImages(cv::CommandLineParser parser)
 
     c1.setCPUMode(cpu_mode);
     c2.setCPUMode(cpu_mode);
-	
+
     std::vector<cv::DMatch> good_matches = matchContextsAndDownload(c1,c2, use_own, cpu_mode);
-    
+
     if (render)
     {
 	cv::Mat finalImage;
@@ -100,8 +100,8 @@ void matchImages(cv::CommandLineParser parser)
 
 	if (use_own)
 	{
-	    drawKeypoints(train, train_kpts, train, cv::Scalar::all(255), 4);
-	    drawKeypoints(test, test_kpts, test, cv::Scalar::all(255), 4);
+	    drawKeypoints(train, train_kpts, train, cv::Scalar::all(255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	    drawKeypoints(test, test_kpts, test, cv::Scalar::all(255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	}
 
 	drawMatches(train,train_kpts,test,test_kpts,good_matches,finalImage,cv::Scalar::all(255),cv::Scalar::all(255),std::vector<char>(), cv::DrawMatchesFlags::DEFAULT);
@@ -123,9 +123,9 @@ int videoKeypoints(cv::VideoCapture capture, cv::CommandLineParser parser, bool 
     capture >> frame;
     resize(frame, frame, cv::Size(width,height), cv::INTER_AREA );
     bimp::Context context(frame);
-    
+
     double t = (double)cv::getTickCount();
-    double t0 = t; 
+    double t0 = t;
 
     int framenum=0;
     cv::Mat output(cv::Size(width,height), CV_32F);
@@ -136,7 +136,7 @@ int videoKeypoints(cv::VideoCapture capture, cv::CommandLineParser parser, bool 
 
     context.setCPUMode(cpu_mode);
     context.resize_cpu = parser.has("resizecpu");
-   
+
     for(;;) {
         double t = (double)cv::getTickCount();
 
@@ -161,7 +161,7 @@ int videoKeypoints(cv::VideoCapture capture, cv::CommandLineParser parser, bool 
         if (render)
         {
             std::vector<cv::KeyPoint> points = bimp::utils::downloadKeypoints(keypoints);
-            drawKeypoints(frame, points, output, cv::Scalar(255,255,255), 4);
+            drawKeypoints(frame, points, output, cv::Scalar(255,255,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
             imshow("Output", output);
         }
 
@@ -226,7 +226,7 @@ int matchToCamera(cv::CommandLineParser parser)
     bimp::Context videoContext(frame);
 
     double t = (double)cv::getTickCount();
-    double t0 = t; 
+    double t0 = t;
 
     int framenum=0;
 
@@ -255,8 +255,8 @@ int matchToCamera(cv::CommandLineParser parser)
 	    {
 		std::vector<cv::KeyPoint> camera_points = bimp::utils::downloadKeypoints(camKpts);
 		std::vector<cv::KeyPoint> object_points = bimp::utils::downloadKeypoints(objKpts);
-		drawKeypoints(object, object_points, out_object, cv::Scalar::all(255), 4);
-		drawKeypoints(frame, camera_points, out_frame, cv::Scalar::all(255), 4);
+		drawKeypoints(object, object_points, out_object, cv::Scalar::all(255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+		drawKeypoints(frame, camera_points, out_frame, cv::Scalar::all(255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	    }
 	    else
 	    {
@@ -275,7 +275,7 @@ int matchToCamera(cv::CommandLineParser parser)
 	char pressed = cv::waitKey(1);
 
         if(pressed == VK_QUIT) break;
-	
+
 	switch (pressed)
 	{
 	case VK_TOGGLE_GPU:
@@ -347,4 +347,3 @@ int main(int argc, const char *const*argv)
 	return 0;
     }
 }
-
