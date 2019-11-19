@@ -9,7 +9,7 @@ set(SOURCES
         src/benchmark.cpp
         )
 
-add_library(${PROJECT_NAME} ${SOURCES})
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 add_library(detection::utils ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME}

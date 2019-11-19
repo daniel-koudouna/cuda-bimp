@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(cuda_bimp)
+project(cuda_bimp LANGUAGES CUDA CXX)
 
 # Provide detection::bimp
 add_subdirectory(utils)
@@ -8,4 +8,3 @@ add_subdirectory(utils)
 add_subdirectory(bimp)
 
 add_subdirectory(example_bimp)
-
