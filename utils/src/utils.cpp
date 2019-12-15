@@ -223,20 +223,20 @@ namespace bimp {
 		}
 
 		void showCUDAMem() {
-			size_t free_byte ;
-			size_t total_byte ;
+                  //	size_t free_byte ;
+                  //	size_t total_byte ;
 
-			auto cuda_status = cudaMemGetInfo( &free_byte, &total_byte ) ;
-			if ( cudaSuccess != cuda_status ){
-				printf("Error: cudaMemGetInfo fails, %s \n", cudaGetErrorString(cuda_status) );
-				exit(1);
-			}
+                  //	auto cuda_status = cudaMemGetInfo( &free_byte, &total_byte ) ;
+                  //	if ( cudaSuccess != cuda_status ){
+                  //		printf("Error: cudaMemGetInfo fails, %s \n", cudaGetErrorString(cuda_status) );
+                  //		exit(1);
+                  //	}
 
-			double free_db = (double)free_byte ;
-			double total_db = (double)total_byte ;
-			double used_db = total_db - free_db ;
-			printf("GPU memory usage: used = %f, free = %f MB, total = %f MB\n",
-				   used_db/1024.0/1024.0, free_db/1024.0/1024.0, total_db/1024.0/1024.0);
+                  //	double free_db = (double)free_byte ;
+                  //	double total_db = (double)total_byte ;
+                  //	double used_db = total_db - free_db ;
+                  //	printf("GPU memory usage: used = %f, free = %f MB, total = %f MB\n",
+                  //		   used_db/1024.0/1024.0, free_db/1024.0/1024.0, total_db/1024.0/1024.0);
 		}
 	} //namespace utils
 }//namespace detection

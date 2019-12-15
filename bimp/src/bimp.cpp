@@ -1,6 +1,7 @@
 #include <cuda.h>
 #include <detection/bimp.hpp>
 #include <detection/cuda_bimp.hpp>
+#include <opencv2/xfeatures2d/cuda.hpp>
 
 namespace bimp {
     Context::Context(cv::Mat &image) :

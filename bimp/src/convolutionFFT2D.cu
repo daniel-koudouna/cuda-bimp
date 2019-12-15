@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// Position convolution kernel center at (0, 0) in the image
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void padKernel(
+void padKernel(
     float *d_Dst,
     float *d_Src,
     int fftH,
@@ -63,7 +63,7 @@ extern "C" void padKernel(
 ////////////////////////////////////////////////////////////////////////////////
 // Prepare data for "pad to border" addressing mode
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void padDataClampToBorder(
+void padDataClampToBorder(
     float *d_Dst,
     float *d_Src,
     int fftH,
@@ -99,7 +99,7 @@ extern "C" void padDataClampToBorder(
 // Modulate Fourier image of padded data by Fourier image of padded kernel
 // and normalize by FFT size
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void modulateAndNormalize(
+void modulateAndNormalize(
     fComplex *d_Dst,
     fComplex *d_Src,
     int fftH,
@@ -126,7 +126,7 @@ extern "C" void modulateAndNormalize(
 static const double PI = 3.1415926535897932384626433832795;
 static const uint BLOCKDIM = 256;
 
-extern "C" void spPostprocess2D(
+void spPostprocess2D(
     void *d_Dst,
     void *d_Src,
     uint DY,
@@ -157,7 +157,7 @@ extern "C" void spPostprocess2D(
     getLastCudaError("spPostprocess2D_kernel<<<>>> execution failed\n");
 }
 
-extern "C" void spPreprocess2D(
+void spPreprocess2D(
     void *d_Dst,
     void *d_Src,
     uint DY,
@@ -193,7 +193,7 @@ extern "C" void spPreprocess2D(
 ////////////////////////////////////////////////////////////////////////////////
 // Combined spPostprocess2D + modulateAndNormalize + spPreprocess2D
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void spProcess2D(
+void spProcess2D(
     void *d_Dst,
     void *d_SrcA,
     void *d_SrcB,

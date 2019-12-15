@@ -41,7 +41,7 @@ inline int iAlignUp(int a, int b){
     return (a % b != 0) ?  (a - a % b + b) : a;
 }
 
-extern "C" void convolutionClampToBorderCPU(
+void convolutionClampToBorderCPU(
     float *h_Result,
     float *h_Data,
     float *h_Kernel,
@@ -53,7 +53,7 @@ extern "C" void convolutionClampToBorderCPU(
     int kernelX
 );
 
-extern "C" void padKernel(
+void padKernel(
     float *d_PaddedKernel,
     float *d_Kernel,
     int fftH,
@@ -64,7 +64,7 @@ extern "C" void padKernel(
     int kernelX
 );
 
-extern "C" void padDataClampToBorder(
+void padDataClampToBorder(
     float *d_PaddedData,
     float *d_Data,
     int fftH,
@@ -77,7 +77,7 @@ extern "C" void padDataClampToBorder(
     int kernelX
 );
 
-extern "C" void modulateAndNormalize(
+void modulateAndNormalize(
     fComplex *d_Dst,
     fComplex *d_Src,
     int fftH,
@@ -85,7 +85,7 @@ extern "C" void modulateAndNormalize(
     int padding
 );
 
-extern "C" void spPostprocess2D(
+void spPostprocess2D(
     void *d_Dst,
     void *d_Src,
     uint DY,
@@ -94,7 +94,7 @@ extern "C" void spPostprocess2D(
     int dir
 );
 
-extern "C" void spPreprocess2D(
+void spPreprocess2D(
     void *d_Dst,
     void *d_Src,
     uint DY,
@@ -103,7 +103,7 @@ extern "C" void spPreprocess2D(
     int dir
 );
 
-extern "C" void spProcess2D(
+void spProcess2D(
     void *d_Data,
     void *d_Data0,
     void *d_Kernel0,

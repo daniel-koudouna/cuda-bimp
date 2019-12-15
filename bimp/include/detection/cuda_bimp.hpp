@@ -147,22 +147,22 @@ namespace bimp
 
 		std::vector<cv::KeyPoint> cuda_keypoints(cv::Mat_<float> KD, cv::Mat_<float> KS, float lambda, float pyrstep);
 
-		extern "C" void complexResponse(
+		void complexResponse(
 				float *d_simple_e,
 				float *d_simple_o,
 				float *d_complex,
 				int fftW, int fftH);
 
-		extern "C" void clearfloatarray(float *d_in, int fftW, int fftH);
+		void clearfloatarray(float *d_in, int fftW, int fftH);
 
-		extern "C" void sumArray(
+		void sumArray(
 				float *d_arg1,
 				float *d_arg2,
 				int fftW,
 				int fftH,
 				int stride);
 
-		extern "C" void FilterSimpleCells(
+		void FilterSimpleCells(
 				fComplex *result_e,
 				fComplex *result_o,
 				fComplex *kernel_e,
@@ -170,9 +170,9 @@ namespace bimp
 				fComplex *data,
 				int fftW,
 				int fftH,
-				cudaStream_t stream = 0);
+				cudaStream_t stream);
 
-		extern "C" void endStoppedResponse(
+		void endStoppedResponse(
 				float *d_double,
 				float *d_single,
 				float *d_complex,
@@ -183,7 +183,7 @@ namespace bimp
 				int stride,
 				cudaStream_t stream = 0);
 
-		extern "C" void inhibitionResponse(
+		void inhibitionResponse(
 				float *d_tan_in,
 				float *d_rad_in,
 				float *d_complex,
@@ -195,18 +195,18 @@ namespace bimp
 				int stride,
 				cudaStream_t stream = 0);
 
-		extern "C" void inhibitKeypoints(float *d_double, float *d_single, float *d_tan_in, float *d_rad_in,
+		void inhibitKeypoints(float *d_double, float *d_single, float *d_tan_in, float *d_rad_in,
 										 int dataW, int dataH, int stride);
 
-		extern "C" void collectCVMemory(
+		void collectCVMemory(
 				cv::cuda::PtrStepSz<float> cv_image,
 				float *d_result,
 				int dataW,
 				int dataH);
 
-		extern "C" void thrustFindMax(float *src, int size, float *max);
+		void thrustFindMax(float *src, int size, float *max);
 
-		extern "C" void identifyKeypoints(
+		void identifyKeypoints(
 				cv::cuda::PtrStepSz<float> result,
 				cv::cuda::PtrStepSz<int> resultInts,
 				cv::cuda::PtrStepSz<float> keypts,
@@ -220,11 +220,11 @@ namespace bimp
 				int dataSize,
 				int *counter);
 
-		extern "C" void copy(
+		void copy(
 				cv::cuda::PtrStepSz<float> src,
 				cv::cuda::PtrStepSz<float> dest);
 
-		extern "C" void addColorFeatures(
+		void addColorFeatures(
 				cv::cuda::PtrStepSz<float> keypoints,
 				cv::cuda::PtrStepSz<uchar3> color_image,
 				cv::cuda::PtrStepSz<float> descriptors);

@@ -1,4 +1,5 @@
 #include "convolutionFFT2D_common.h"
+#include <opencv2/xfeatures2d/cuda.hpp>
 #include "cuda_bimp.hpp"
 #include "cuda.h"
 #include <opencv2/xfeatures2d/cuda.hpp>
