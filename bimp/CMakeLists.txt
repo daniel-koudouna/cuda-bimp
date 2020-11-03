@@ -9,6 +9,7 @@ find_package( Boost REQUIRED COMPONENTS system filesystem )
 set (CMAKE_CXX_STANDARD 11)
 
 set(SOURCES
+        src/utils.cpp
         src/bimp.cpp
         src/convolutionFFT2D.cu
         src/convolutionFFT2D_gold.cpp
@@ -24,7 +25,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_STANDARD 11)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         )
 
-cuda_add_cufft_to_target(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} detection::utils ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})

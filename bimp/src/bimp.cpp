@@ -167,6 +167,7 @@ namespace bimp {
           good_matches.push_back( matches[k][0] );
         }
       }
+      return good_matches;
     }
   }
 

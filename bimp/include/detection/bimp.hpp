@@ -7,6 +7,7 @@
 #include "cuda_bimp.hpp"
 #include "opencv2/xfeatures2d.hpp"
 #include <opencv2/xfeatures2d/cuda.hpp>
+#include <opencv2/cudafeatures2d.hpp>
 #include "detection/utils.hpp"
 
 namespace bimp {

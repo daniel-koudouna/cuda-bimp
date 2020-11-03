@@ -8,6 +8,9 @@
 #define getLastCudaError cutilCheckMsg
 #define checkCudaErrors cutilSafeCall
 #endif /*CUDA_VERSION >= 5000*/
+#define THRUST_IGNORE_DEPRECATED_CPP_DIALECT
+#define CUB_IGNORE_DEPRECATED_CPP_DIALECT
+
 #include <thrust/device_vector.h>
 #include <thrust/device_ptr.h>
 #include <thrust/extrema.h>
@@ -23,8 +26,14 @@
 #include <helper_cuda.h>
 #include "detection/cuda_bimp.hpp"
 #include "detection/convolutionFFT2D_common.h"
-#include "detection/util.h"
 #include "detection/utils.hpp"
+
+
+#include <iostream>
+#include <opencv2/cudafilters.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/cudawarping.hpp>
+#include <opencv2/cudaarithm.hpp>
 
 
 #define BLX 256
@@ -122,9 +131,9 @@ namespace bimp {
             int rows = getKeypoints(input, result, cs, cpu_mode, cpu_resize);
             if (rows > KP_MAX_POINTS)
             {
-                cerr << "Warning: Keypoints (" << rows << ") exceed current keypoint maximum." << endl
-                     << "This may be caused if your training images are high-resolution." << endl
-                     << "Consider increasing the keypoint limit defined in cuda_bimp.hpp" << endl;
+                    std::cerr << "Warning: Keypoints (" << rows << ") exceed current keypoint maximum." << std::endl
+                     << "This may be caused if your training images are high-resolution." << std::endl
+                     << "Consider increasing the keypoint limit defined in cuda_bimp.hpp" << std::endl;
                 rows = KP_MAX_POINTS;
             }
             return result.colRange(cv::Range(0, rows));
@@ -786,7 +795,7 @@ namespace bimp {
 
             return points_d;
 
-            int moved = 0;
+            // int moved = 0;
             // Merge the single-stopped and double-stopped responses
             // #pragma omp parallel for schedule(dynamic,1) default(shared)
             // for(unsigned i=0; i<points_d.size(); i++)
