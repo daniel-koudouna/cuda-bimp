@@ -61,9 +61,9 @@ namespace bimp {
         cudaStream_t* initOrientationStreams()
         {
             cudaStream_t *res = new cudaStream_t[NUM_ORI];
-            for (int i = 0; i < NUM_ORI; i++) {
-                checkCudaErrors(cudaStreamCreate(&res[i]));
-            }
+            //            for (int i = 0; i < NUM_ORI; i++) {
+            //                checkCudaErrors(cudaStreamCreate(&res[i]));
+            //            }
             return res;
         }
 
@@ -106,25 +106,25 @@ namespace bimp {
             std::cout << "found " << count << " junk values on " << width << " , " << height << std::endl;
         }
 
-        int getKeypoints(cv::cuda::GpuMat &input, cv::cuda::GpuMat &output, bimp::cuda::CudaStuff &cs, bool cpu_mode, bool resize_cpu) {
-            int rows = 0;
-            output.setTo(cv::Scalar(0));
+    int getKeypoints(cv::cuda::GpuMat &input, cv::cuda::GpuMat &output, bimp::cuda::CudaStuff &cs, bool cpu_mode, bool resize_cpu) {
+      int rows = 0;
+      output.setTo(cv::Scalar(0));
 
-            if (!cpu_mode) {
-                DoFullGPUFiltering(cs, input, output);
-                checkCudaErrors(cudaDeviceSynchronize());
-                rows = *cs.im.d_k_count;
-            } else {
-                setupCUDAImages(cs, input, resize_cpu);
-                DoGPUFiltering(cs);
-                std::vector<cv::KeyPoint> pts = ExtractCUDAKeypoints(cs);
-                std::cout << "pts size is " << pts.size() << std::endl;
-                rows = pts.size();
-                bimp::utils::uploadKeypoints(pts, output);
-            }
+      if (!cpu_mode) {
+        DoFullGPUFiltering(cs, input, output);
+        checkCudaErrors(cudaDeviceSynchronize());
+        cudaMemcpy(&rows, cs.im.d_k_count, sizeof(int), cudaMemcpyDeviceToHost);
+      } else {
+        setupCUDAImages(cs, input, resize_cpu);
+        DoGPUFiltering(cs);
+        std::vector<cv::KeyPoint> pts = ExtractCUDAKeypoints(cs);
+        std::cout << "pts size is " << pts.size() << std::endl;
+        rows = pts.size();
+        bimp::utils::uploadKeypoints(pts, output);
+      }
 
-            return rows;
-        }
+      return rows;
+    }
 
         cv::cuda::GpuMat getKeypoints(cv::cuda::GpuMat &input, CudaStuff &cs, bool cpu_mode, bool cpu_resize) {
             cv::cuda::GpuMat result(KP_VECTOR_LENGTH, KP_MAX_POINTS, CV_32F);
@@ -190,7 +190,8 @@ namespace bimp {
 
             bimp::utils::log("Full keypoint extraction", 0, &t);
 
-            int kptcount = (*cs.im.d_k_count);
+            //int kptcount = (*cs.im.d_k_count);
+            int kptcount = 100; //TODO fix managed memory
 
             drawGPUKeypoints(input, res, output, kptcount, cv::Scalar(255, 255, 255), 4);
 
@@ -353,7 +354,8 @@ namespace bimp {
                 (*this).ks.push_back(k);
             }
 
-            checkCudaErrors(cudaMallocManaged(((void **) &(this->im.d_k_count)), sizeof(int)));
+            checkCudaErrors(
+                    cudaMalloc(((void **) &(this->im.d_k_count)), sizeof(int)));
 
             // Allocate the memory for shared objects (frame information and reusable buffers)
             CudaKernels &k0 = this->ks[0];
@@ -459,7 +461,9 @@ namespace bimp {
 
         void DoFullGPUFiltering(CudaStuff &cs, cv::cuda::GpuMat &src, cv::cuda::GpuMat &dst) {
 
-            *cs.im.d_k_count = 0;
+          std::cout << "starting downscaling" << std::endl;
+
+          cudaMemset(cs.im.d_k_count, 0, sizeof(int));
 
             for (int i = 0; i < cs.ks.size(); i++) {
 
@@ -475,7 +479,6 @@ namespace bimp {
                     pyrstep /= 2;
 
                 }
-
                 cv::cuda::GpuMat data(k.dataH, k.dataW, CV_32FC1, k.d_Data);
                 downscaled.convertTo(data, CV_32FC1, 255.0 / 65536.0);
 
@@ -1214,7 +1217,7 @@ void endStoppedResponse(
     dim3 _blockDim(32, 32, 1);
     dim3 _gridDim((dataW + _blockDim.x - 1)/ _blockDim.x, (dataH + _blockDim.y - 1) / _blockDim.y, 1);
 
-    endStoppedResponse_kernel<<<_gridDim,_blockDim, 0,stream>>>(
+    endStoppedResponse_kernel<<<_gridDim,_blockDim, 0>>>(
 	d_double, d_single, d_complex, offset1, offset2,
 	dataW, dataH, stride
 	);
@@ -1228,7 +1231,7 @@ void inhibitionResponse(
     dim3 _blockDim(32, 32, 1);
     dim3 _gridDim((dataW + _blockDim.x - 1)/ _blockDim.x, (dataH + _blockDim.y - 1) / _blockDim.y, 1);
 
-    inhibitionResponse_kernel<<<_gridDim, _blockDim, 0, stream>>>(
+    inhibitionResponse_kernel<<<_gridDim, _blockDim, 0>>>(
 	d_tan_in, d_rad_in, d_complex, d_complex2, offset1, offset2,
 	dataW, dataH, stride
 	);
