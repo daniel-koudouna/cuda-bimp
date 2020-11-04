@@ -110,6 +110,8 @@ namespace bimp
 
 	    int getKeypoints(cv::cuda::GpuMat &input, cv::cuda::GpuMat &output, CudaStuff &cs, bool cpu_mode = false, bool resize_cpu = false);
 
+      void downloadResultsToCPU(bimp::cuda::CudaKernels &k);
+
 		/**
          * Uploads an image from the CPU to the GPU, and converts it into
          * the appropriate format.

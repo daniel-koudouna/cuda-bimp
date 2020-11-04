@@ -636,6 +636,14 @@ namespace bimp {
 
         }
 
+    void downloadResultsToCPU(bimp::cuda::CudaKernels &k) {
+      std::cout << "copying gpu to cpu memory" << std::endl;
+      checkCudaErrors(cudaMemcpy(k.h_ResultDouble, k.d_ResultDouble, k.dataH * k.dataW * sizeof(float),
+                                 cudaMemcpyDeviceToHost));
+      checkCudaErrors(cudaMemcpy(k.h_ResultSingle, k.d_ResultSingle, k.dataH * k.dataW * sizeof(float),
+                                 cudaMemcpyDeviceToHost));
+    }
+
         /**
          * Resize the image according to the lambdas and store
          * the results on the GPU, accessed via a cuda pointer.

@@ -40,6 +40,8 @@ namespace bimp {
 
 	std::vector<bimp::cuda::CudaKernels> getResponses();
 
+      void downloadResultsToCPU();
+
         void loadImage(cv::Mat new_image);
         void loadImage(cv::cuda::GpuMat new_image);
         void setCPUMode(bool cpu_mode);

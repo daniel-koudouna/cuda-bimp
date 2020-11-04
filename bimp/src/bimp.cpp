@@ -72,6 +72,12 @@ namespace bimp {
     return current_keypoints;
   }
 
+  void Context::downloadResultsToCPU() {
+    for (auto k : this->getResponses()) {
+      bimp::cuda::downloadResultsToCPU(k);
+    }
+  }
+
     cv::Mat Context::getDescriptorsAndDownload() {
       cv::Mat result;
       cv::cuda::GpuMat& descriptors = getDescriptors();
