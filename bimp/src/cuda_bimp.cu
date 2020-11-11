@@ -461,8 +461,6 @@ namespace bimp {
 
         void DoFullGPUFiltering(CudaStuff &cs, cv::cuda::GpuMat &src, cv::cuda::GpuMat &dst) {
 
-          std::cout << "starting downscaling" << std::endl;
-
           cudaMemset(cs.im.d_k_count, 0, sizeof(int));
 
             for (int i = 0; i < cs.ks.size(); i++) {
@@ -622,7 +620,7 @@ namespace bimp {
                 inhibitKeypoints(k.d_ResultDouble, k.d_ResultSingle, cs.im.d_tan_in, cs.im.d_rad_in, k.dataW, k.dataH,
                                  k.dataW);
 
-                std::cout << "copying gpu to cpu memory" << std::endl;
+                //std::cout << "copying gpu to cpu memory" << std::endl;
                 checkCudaErrors(cudaMemcpy(k.h_ResultDouble, k.d_ResultDouble, k.dataH * k.dataW * sizeof(float),
                                            cudaMemcpyDeviceToHost));
                 checkCudaErrors(cudaMemcpy(k.h_ResultSingle, k.d_ResultSingle, k.dataH * k.dataW * sizeof(float),
@@ -637,7 +635,7 @@ namespace bimp {
         }
 
     void downloadResultsToCPU(bimp::cuda::CudaKernels &k) {
-      std::cout << "copying gpu to cpu memory" << std::endl;
+      //std::cout << "copying gpu to cpu memory" << std::endl;
       checkCudaErrors(cudaMemcpy(k.h_ResultDouble, k.d_ResultDouble, k.dataH * k.dataW * sizeof(float),
                                  cudaMemcpyDeviceToHost));
       checkCudaErrors(cudaMemcpy(k.h_ResultSingle, k.d_ResultSingle, k.dataH * k.dataW * sizeof(float),
